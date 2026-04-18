@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CAPITAL">
+<meta name="theme-color" content="#08090c">
+<title>CAPITAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090c;--s1:#0f1117;--s2:#141920;--s3:#1a2030;
+  --bdr:#1e2535;--bdr2:#252f42;
+  --gold:#c9a84c;--green:#3ecf8e;--red:#f05252;
+  --blue:#4c8fc9;--purple:#9b6fc9;--orange:#f08552;
+  --cyan:#52c8f0;--pink:#f052a0;
+  --txt:#e2e6f0;--muted:#4a5970;--muted2:#6b7d96;
+  --mono:'DM Mono',monospace;--serif:'Playfair Display',serif;--sans:'DM Sans',sans-serif;
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+/* HEADER */
+#hdr{background:rgba(8,9,12,.97);border-bottom:1px solid var(--bdr);padding:calc(11px + var(--sat)) 16px 11px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;backdrop-filter:blur(16px);z-index:100}
+.logo{font-family:var(--serif);font-size:1.15rem;font-weight:900;letter-spacing:.14em;color:var(--gold)}
+.hdr-r{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.56rem;color:var(--muted2)}
+.ldot{width:5px;height:5px;border-radius:50%;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* MAIN */
+#main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.page{display:none;padding:13px 13px 18px;max-width:680px;margin:0 auto}
+.page.active{display:block;animation:fu .2s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* NAV */
+#nav{order:99;background:rgba(8,9,14,.98);border-top:1px solid var(--bdr);padding-bottom:var(--sab);display:flex;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+#nav::-webkit-scrollbar{display:none}
+.nb{flex:0 0 auto;padding:9px 12px;font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);background:none;border:none;border-top:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .15s}
+.nb.active{color:var(--gold);border-top-color:var(--gold)}
+
+/* MODAL OVERLAY — clé API */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
+#modal-overlay.hidden{display:none}
+#modal{background:var(--s1);border:1px solid var(--bdr2);border-radius:16px;padding:24px;width:100%;max-width:400px}
+.modal-logo{font-family:var(--serif);font-size:1.4rem;font-weight:900;color:var(--gold);margin-bottom:4px}
+.modal-sub{font-size:.75rem;color:var(--muted2);margin-bottom:20px;font-weight:300}
+.modal-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
+.modal-input{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;padding:11px 13px;color:var(--txt);font-family:var(--mono);font-size:.72rem;outline:none;transition:border-color .2s;margin-bottom:6px}
+.modal-input:focus{border-color:var(--gold)}
+.modal-hint{font-size:.68rem;color:var(--muted);margin-bottom:18px;line-height:1.5;font-weight:300}
+.modal-hint a{color:var(--gold);text-decoration:none}
+.modal-btn{width:100%;padding:12px;background:var(--gold);border:none;border-radius:8px;color:#000;font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
+.modal-btn:hover{opacity:.9}
+.modal-btn:disabled{opacity:.5;cursor:not-allowed}
+.modal-err{font-size:.7rem;color:var(--red);margin-bottom:10px;display:none}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;padding:12px 14px;margin-bottom:9px}
+.stitle{font-family:var(--mono);font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.stitle:first-child{margin-top:2px}
+.tag{display:inline-block;padding:2px 6px;border-radius:3px;font-family:var(--mono);font-size:.47rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+
+/* GEN BUTTON */
+.gbtn{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s2);border:1px solid var(--bdr2);border-radius:9px;color:var(--txt);font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;cursor:pointer;transition:all .15s;text-transform:uppercase;margin-bottom:11px;width:100%}
+.gbtn:active{border-color:var(--gold);color:var(--gold)}
+.gbtn:disabled{opacity:.45;cursor:not-allowed}
+.sp{width:10px;height:10px;border:2px solid var(--bdr);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SKELETONS */
+.sk{background:linear-gradient(90deg,var(--s2) 25%,var(--bdr) 50%,var(--s2) 75%);background-size:200% 100%;animation:sh 1.5s infinite;border-radius:4px;height:9px;margin-bottom:6px}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+.skc{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;padding:12px 14px;margin-bottom:9px;opacity:.28}
+
+/* NEWS CARD */
+.nc{display:block;background:var(--s1);border:1px solid var(--bdr);border-radius:11px;padding:12px 14px;margin-bottom:9px;text-decoration:none;color:inherit}
+.nc:active{background:var(--s2)}
+.nc-top{display:flex;align-items:center;gap:6px;margin-bottom:7px;flex-wrap:wrap}
+.nc-src{font-family:var(--mono);font-size:.5rem;color:var(--muted2)}
+.nc-read{margin-left:auto;font-family:var(--mono);font-size:.46rem;color:var(--muted);padding:2px 6px;border:1px solid var(--bdr);border-radius:4px;white-space:nowrap}
+.nc-title{font-family:var(--serif);font-size:.9rem;font-weight:700;line-height:1.32;margin-bottom:6px}
+.nc-sum{font-size:.74rem;color:#8fa0b8;font-weight:300;line-height:1.65;margin-bottom:7px}
+.nc-imp{padding:5px 9px;background:var(--s2);border-radius:5px;border-left:2px solid var(--gold);font-size:.68rem;color:var(--txt);line-height:1.5;font-weight:300}
+.nc-imp b{color:var(--gold);font-weight:600}
+
+/* PORTFOLIO */
+.pc{background:var(--s1);border:1px solid var(--bdr);border-top-width:2px;border-radius:11px;padding:11px 13px;margin-bottom:8px}
+.psym{font-family:var(--mono);font-size:.54rem;color:var(--muted2);margin-bottom:2px}
+.pname{font-size:.84rem;font-weight:600;margin-bottom:7px}
+.pfoot{display:flex;justify-content:space-between;align-items:center}
+.pdca{font-family:var(--mono);font-size:.54rem;color:var(--muted2)}
+.pst{font-family:var(--mono);font-size:.65rem}
+.sbar{background:var(--s2);border:1px solid var(--bdr);border-radius:11px;padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.dw{display:flex;align-items:center;gap:14px}
+.leg{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:.57rem;flex:1}
+.lr{display:flex;align-items:center;gap:6px}
+.ld{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ins{background:var(--s2);border:1px solid var(--bdr);border-radius:11px;padding:10px 13px;display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}
+.ins p{font-size:.72rem;line-height:1.65;font-weight:300}
+.ins strong{color:var(--gold);font-weight:600}
+
+/* CHAT */
+#cw{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;overflow:hidden}
+#ch{background:var(--s2);padding:9px 13px;border-bottom:1px solid var(--bdr);font-family:var(--mono);font-size:.53rem;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+#cm{padding:12px;min-height:80px;max-height:calc(100vh - 260px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch}
+.msg{max-width:88%;padding:8px 11px;border-radius:10px;font-size:.74rem;line-height:1.6;font-weight:300;word-break:break-word;white-space:pre-wrap}
+.mai{background:var(--s2);border:1px solid var(--bdr);align-self:flex-start}
+.mu{background:rgba(201,168,76,.11);border:1px solid rgba(201,168,76,.22);align-self:flex-end}
+#cr{display:flex;border-top:1px solid var(--bdr)}
+#ci{flex:1;background:transparent;border:none;outline:none;padding:12px 13px;color:var(--txt);font-family:var(--sans);font-size:.74rem;font-weight:300}
+#ci::placeholder{color:var(--muted)}
+#cs{padding:12px 13px;background:none;border:none;border-left:1px solid var(--bdr);color:var(--gold);cursor:pointer;font-family:var(--mono);font-size:.54rem;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+#cs:disabled{opacity:.4}
+
+/* API KEY settings row */
+.apirow{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:9px;padding:9px 12px;margin-bottom:10px}
+.apirow span{font-family:var(--mono);font-size:.55rem;color:var(--muted2);flex:1}
+.apibtn{padding:5px 10px;background:var(--s1);border:1px solid var(--bdr2);border-radius:6px;color:var(--txt);font-family:var(--mono);font-size:.52rem;cursor:pointer;white-space:nowrap}
+
+.errbox{background:var(--s1);border:1px solid rgba(240,82,82,.3);border-radius:11px;padding:12px 14px;margin-bottom:9px}
+.errbox p{color:var(--red);font-size:.72rem;line-height:1.55}
+.ts{font-family:var(--mono);font-size:.47rem;color:var(--muted);text-align:right;padding:2px 0 5px}
+</style>
+</head>
+<body>
+
+<!-- MODAL CLÉ API -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div class="modal-logo">CAPITAL</div>
+    <div class="modal-sub">Configuration initiale — 1 minute</div>
+
+    <div class="modal-label">Ta clé API Anthropic</div>
+    <input class="modal-input" id="key-input" type="password" placeholder="sk-ant-api03-...">
+    <div class="modal-hint">
+      Crée ta clé gratuite sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+      → "API Keys" → "Create Key" → copie-colle ici.<br>
+      <br>
+      Ta clé est stockée <strong style="color:var(--txt)">uniquement sur ton appareil</strong>, jamais envoyée ailleurs.
+    </div>
+    <div class="modal-err" id="modal-err">Clé invalide — elle doit commencer par sk-ant-</div>
+    <button class="modal-btn" id="modal-save" onclick="saveKey()">Sauvegarder et démarrer →</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="logo">CAPITAL</div>
+  <div class="hdr-r">
+    <span class="ldot" id="ldot" style="background:var(--green)"></span>
+    <span id="clk">--:--</span>
+    <span id="dt">--/--</span>
+  </div>
+</div>
+
+<div id="main">
+
+  <!-- PORTEFEUILLE -->
+  <div class="page active" id="page-portfolio">
+    <div class="sbar">
+      <div>
+        <div style="font-family:var(--mono);font-size:.5rem;color:var(--muted2);margin-bottom:3px;letter-spacing:.1em;text-transform:uppercase">Épargne mensuelle</div>
+        <div style="font-family:var(--mono);font-size:1.25rem;font-weight:600;color:var(--green)">240 €<span style="font-size:.6rem;color:var(--muted2)">/mois</span></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:.5rem;color:var(--muted2);margin-bottom:3px">HORIZON</div>
+        <div style="font-family:var(--mono);font-size:.85rem;color:var(--gold)">~35 ans</div>
+        <div style="font-family:var(--mono);font-size:.48rem;color:var(--muted2)">Retraite capitalisation</div>
+      </div>
+    </div>
+
+    <div class="stitle">Compte-Titres Ordinaire · 100 €/mois</div>
+    <div class="pc" style="border-top-color:#c9a84c">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="psym">NVDA · NASDAQ · Action</div><div class="pname">Nvidia</div></div>
+        <span class="tag" style="background:rgba(201,168,76,.15);color:var(--gold)">Tech / IA</span>
+      </div>
+      <div class="pfoot"><div class="pdca">DCA 100 €/mois · CTO</div><div class="pst" style="color:var(--green)">★★★</div></div>
+    </div>
+
+    <div class="stitle">Plan d'Épargne en Actions · 140 €/mois</div>
+    <div class="pc" style="border-top-color:#3ecf8e">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="psym">MSCI World Swap PEA · ETF</div><div class="pname">MSCI World Swap PEA EUR (Acc)</div></div>
+        <span class="tag" style="background:rgba(62,207,142,.12);color:var(--green)">ETF</span>
+      </div>
+      <div class="pfoot"><div class="pdca">DCA 30 €/mois · PEA</div><div class="pst" style="color:var(--green)">★★★</div></div>
+    </div>
+    <div class="pc" style="border-top-color:#3ecf8e">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="psym">MSCI EM ESG · ETF PEA</div><div class="pname">PEA MSCI Emerging Markets ESG</div></div>
+        <span class="tag" style="background:rgba(62,207,142,.12);color:var(--green)">ETF</span>
+      </div>
+      <div class="pfoot"><div class="pdca">DCA 60 €/mois · PEA</div><div class="pst" style="color:var(--green)">★★★</div></div>
+    </div>
+    <div class="pc" style="border-top-color:#52c8f0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="psym">ENGI.PA · Euronext · Action</div><div class="pname">Engie</div></div>
+        <span class="tag" style="background:rgba(82,200,240,.12);color:var(--cyan)">Énergie</span>
+      </div>
+      <div class="pfoot"><div class="pdca">DCA 50 €/mois · PEA</div><div class="pst" style="color:var(--gold)">★★☆</div></div>
+    </div>
+
+    <div class="stitle">Positions tenues (Hold)</div>
+    <div class="pc" style="border-top-color:#52c8f0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="psym">AI.PA · Euronext</div><div class="pname">Air Liquide</div></div>
+        <span class="tag" style="background:rgba(82,200,240,.12);color:var(--cyan)">Industrie</span>
+      </div>
+      <div class="pfoot"><div class="pdca">Hold · Long terme</div><div class="pst" style="color:var(--gold)">★★☆</div></div>
+    </div>
+    <div class="pc" style="border-top-color:#9b6fc9">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="psym">RMS.PA · Euronext</div><div class="pname">Hermès</div></div>
+        <span class="tag" style="background:rgba(155,111,201,.15);color:var(--purple)">Luxe</span>
+      </div>
+      <div class="pfoot"><div class="pdca">Hold · Position légère</div><div class="pst" style="color:var(--muted2)">★☆☆</div></div>
+    </div>
+    <div class="pc" style="border-top-color:#f08552">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="psym">BTC · Crypto</div><div class="pname">Bitcoin</div></div>
+        <span class="tag" style="background:rgba(240,82,82,.12);color:var(--red)">Crypto</span>
+      </div>
+      <div class="pfoot"><div class="pdca">Hold · Haute volatilité</div><div class="pst" style="color:var(--gold)">★★☆</div></div>
+    </div>
+
+    <div class="stitle">Allocation estimée</div>
+    <div class="card">
+      <div class="dw">
+        <svg style="transform:rotate(-90deg);flex-shrink:0" width="82" height="82" viewBox="0 0 82 82">
+          <circle cx="41" cy="41" r="30" fill="none" stroke="#c9a84c" stroke-width="10" stroke-dasharray="56.5 131.9" stroke-dashoffset="0"/>
+          <circle cx="41" cy="41" r="30" fill="none" stroke="#3ecf8e" stroke-width="10" stroke-dasharray="28.3 160.2" stroke-dashoffset="-56.5"/>
+          <circle cx="41" cy="41" r="30" fill="none" stroke="#52c8f0" stroke-width="10" stroke-dasharray="45.2 143.2" stroke-dashoffset="-84.8"/>
+          <circle cx="41" cy="41" r="30" fill="none" stroke="#f08552" stroke-width="10" stroke-dasharray="22.6 165.8" stroke-dashoffset="-130"/>
+          <circle cx="41" cy="41" r="30" fill="none" stroke="#4c8fc9" stroke-width="10" stroke-dasharray="16.96 171.5" stroke-dashoffset="-152.6"/>
+          <circle cx="41" cy="41" r="30" fill="none" stroke="#9b6fc9" stroke-width="10" stroke-dasharray="5.65 182.8" stroke-dashoffset="-169.6"/>
+        </svg>
+        <div class="leg">
+          <div class="lr"><div class="ld" style="background:#c9a84c"></div><span style="flex:1">Nvidia</span><span style="color:var(--muted2)">30%</span></div>
+          <div class="lr"><div class="ld" style="background:#3ecf8e"></div><span style="flex:1">MSCI World</span><span style="color:var(--muted2)">15%</span></div>
+          <div class="lr"><div class="ld" style="background:#52c8f0"></div><span style="flex:1">Engie + EM ESG</span><span style="color:var(--muted2)">24%</span></div>
+          <div class="lr"><div class="ld" style="background:#f08552"></div><span style="flex:1">Bitcoin</span><span style="color:var(--muted2)">12%</span></div>
+          <div class="lr"><div class="ld" style="background:#4c8fc9"></div><span style="flex:1">Air Liquide</span><span style="color:var(--muted2)">12%</span></div>
+          <div class="lr"><div class="ld" style="background:#9b6fc9"></div><span style="flex:1">Hermès</span><span style="color:var(--muted2)">7%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="ins">
+      <span style="font-size:.85rem;flex-shrink:0">💡</span>
+      <p><strong>Projection :</strong> 240€/mois × 35 ans à 7%/an ≈ <strong style="color:var(--green)">350 000 €</strong>. PEA = exonération fiscale après 5 ans. 💪</p>
+    </div>
+  </div>
+
+  <!-- NEWS PAGES (init dynamique) -->
+  <div class="page" id="page-geo"></div>
+  <div class="page" id="page-finance"></div>
+  <div class="page" id="page-tech"></div>
+  <div class="page" id="page-space"></div>
+  <div class="page" id="page-science"></div>
+  <div class="page" id="page-ocean"></div>
+  <div class="page" id="page-sport"></div>
+  <div class="page" id="page-manga"></div>
+  <div class="page" id="page-cbrown"></div>
+
+  <!-- CHAT -->
+  <div class="page" id="page-chat">
+    <div style="height:6px"></div>
+    <div id="cw">
+      <div id="ch"><span class="ldot" style="background:var(--green)"></span> Analyste IA · Tous sujets · Temps réel</div>
+      <div id="cm">
+        <div class="msg mai">Bonjour 👋 Pose-moi n'importe quelle question — finance, géopolitique, espace, sciences, manga ou Chris Brown. Je recherche en temps réel.</div>
+      </div>
+      <div id="cr">
+        <input id="ci" type="text" placeholder="Ex: C'est quoi un trou noir ?" autocomplete="off">
+        <button id="cs" onclick="sendChat()">Envoyer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉGLAGES -->
+  <div class="page" id="page-settings">
+    <div style="height:8px"></div>
+    <div class="stitle">Clé API</div>
+    <div class="apirow">
+      <span id="key-status">Clé configurée ✓</span>
+      <button class="apibtn" onclick="changeKey()">Modifier</button>
+    </div>
+    <div class="ins">
+      <span style="font-size:.85rem;flex-shrink:0">🔒</span>
+      <p>Ta clé API est stockée <strong>uniquement sur cet appareil</strong> dans le navigateur. Elle n'est jamais envoyée à un serveur tiers — elle va directement à l'API Anthropic.</p>
+    </div>
+
+    <div class="stitle">Comment obtenir une clé API</div>
+    <div class="card" style="font-size:.74rem;line-height:1.7;font-weight:300">
+      1. Va sur <strong style="color:var(--gold)">console.anthropic.com</strong><br>
+      2. Crée un compte gratuit (email ou Google)<br>
+      3. Menu gauche → <strong style="color:var(--txt)">API Keys</strong> → <strong style="color:var(--txt)">Create Key</strong><br>
+      4. Copie la clé <span style="font-family:var(--mono);font-size:.65rem;color:var(--cyan)">sk-ant-api03-...</span><br>
+      5. Reviens ici et clique "Modifier"<br><br>
+      <span style="color:var(--muted2)">💰 5$ de crédit offert à l'inscription = plusieurs semaines d'utilisation de cette app.</span>
+    </div>
+
+    <div class="stitle">Mettre à jour l'app</div>
+    <div class="card" style="font-size:.74rem;line-height:1.7;font-weight:300">
+      Quand une nouvelle version est disponible, télécharge le nouveau fichier <span style="font-family:var(--mono);font-size:.65rem;color:var(--cyan)">capital.html</span> et redépose-le sur Netlify dans <strong style="color:var(--txt)">Deploys</strong>. Ta clé API reste sauvegardée.
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <button class="nb active" onclick="goTo('portfolio',this)">💼 Portefeuille</button>
+  <button class="nb" onclick="goTo('geo',this)">🌍 Géopol.</button>
+  <button class="nb" onclick="goTo('finance',this)">📈 Finance</button>
+  <button class="nb" onclick="goTo('tech',this)">🤖 Tech & IA</button>
+  <button class="nb" onclick="goTo('space',this)">🔭 Espace</button>
+  <button class="nb" onclick="goTo('science',this)">🧬 Sciences</button>
+  <button class="nb" onclick="goTo('ocean',this)">🌊 Océans</button>
+  <button class="nb" onclick="goTo('sport',this)">🏆 Sport</button>
+  <button class="nb" onclick="goTo('manga',this)">🎌 Manga</button>
+  <button class="nb" onclick="goTo('cbrown',this)">🎤 C. Brown</button>
+  <button class="nb" onclick="goTo('chat',this)">💬 Analyste</button>
+  <button class="nb" onclick="goTo('settings',this)">⚙️ Réglages</button>
+</div>
+
+<script>
+// ── CLÉ API ────────────────────────────────────────────────────
+const KEY_STORE = 'capital_api_key';
+
+function getKey(){ return localStorage.getItem(KEY_STORE) || ''; }
+
+function saveKey(){
+  const val = document.getElementById('key-input').value.trim();
+  const errEl = document.getElementById('modal-err');
+  if(!val.startsWith('sk-ant-') && !val.startsWith('sk-')){
+    errEl.style.display='block';
+    return;
+  }
+  errEl.style.display='none';
+  localStorage.setItem(KEY_STORE, val);
+  document.getElementById('modal-overlay').classList.add('hidden');
+  initApp();
+}
+
+function changeKey(){
+  document.getElementById('key-input').value = getKey();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+// Vérif au chargement
+window.addEventListener('load', ()=>{
+  if(getKey()){
+    document.getElementById('modal-overlay').classList.add('hidden');
+    initApp();
+  }
+  // Enter sur le champ
+  document.getElementById('key-input').addEventListener('keydown', e=>{ if(e.key==='Enter') saveKey(); });
+});
+
+function initApp(){
+  tick();
+  const ks = document.getElementById('key-status');
+  if(ks) ks.textContent = 'Clé configurée ✓';
+}
+
+// ── CLOCK ──────────────────────────────────────────────────────
+function tick(){
+  const n=new Date();
+  document.getElementById('clk').textContent=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('dt').textContent=n.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
+  setTimeout(tick,1000);
+}
+
+// ── NAV ────────────────────────────────────────────────────────
+function goTo(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('main').scrollTop=0;
+  const news=['geo','finance','tech','space','science','ocean','sport','manga','cbrown'];
+  const pg=document.getElementById('page-'+id);
+  if(news.includes(id)&&!pg.dataset.init){pg.dataset.init='1';initPage(id);}
+}
+
+// ── CONFIG SECTIONS ────────────────────────────────────────────
+const TODAY=new Date().toLocaleDateString('fr-FR');
+const SCHEMA=`\n\nRéponds UNIQUEMENT avec un JSON valide sans backticks ni texte autour :
+{"items":[{"tag":"TAG","title":"Titre en français","source":"Nom du média","url":"https://url.fr","summary":"Résumé en 2-3 phrases claires en français.","impact":"Une phrase sur l'impact ou l'intérêt."}]}
+Exactement 5 items. Tous les textes en français.`;
+
+const CFG={
+  geo:{i:'🌍 Conflits, diplomatie, tensions — et leur impact sur tes investissements.',b:'Charger les actualités géopolitiques',
+    tc:{GEO:'#4c8fc9',RISQUE:'#f05252',DIPLO:'#4c8fc9',CRISE:'#f08552'},
+    p:`Tu es journaliste géopolitique. Date : ${TODAY}. Génère 5 actualités géopolitiques récentes importantes sur sources francophones (Le Monde, Le Figaro, France24, RFI). Conflits, diplomatie, élections, sanctions. Dans "impact" : conséquences sur les marchés. Tags : GEO, RISQUE, DIPLO, CRISE.${SCHEMA}`},
+  finance:{i:'📈 Marchés, crypto, taux BCE/Fed — en lien avec ton portefeuille.',b:'Charger les actualités financières',
+    tc:{'MARCHÉ':'#3ecf8e',CRYPTO:'#f08552',MACRO:'#3ecf8e',TAUX:'#52c8f0',BOURSE:'#3ecf8e'},
+    p:`Tu es analyste financier. Date : ${TODAY}. Portefeuille : Nvidia 100€/mois CTO, MSCI World Swap PEA 30€/mois, MSCI EM ESG 60€/mois PEA, Engie 50€/mois PEA, Air Liquide hold, Hermès hold, Bitcoin hold. Génère 5 actualités financières récentes sur sources françaises (Les Échos, BFM Business, La Tribune). Tags : MARCHÉ, CRYPTO, MACRO, TAUX, BOURSE.${SCHEMA}`},
+  tech:{i:'🤖 GPU, IA, Nvidia, startups — les actus tech.',b:'Charger les actualités Tech & IA',
+    tc:{IA:'#c9a84c',TECH:'#c9a84c',GPU:'#c9a84c',STARTUP:'#c9a84c'},
+    p:`Tu es journaliste tech. Date : ${TODAY}. Génère 5 actualités Tech & IA récentes sur sources françaises (01net, Numerama, Frandroid). GPU Nvidia, LLMs, OpenAI, Google, semi-conducteurs. Tags : IA, TECH, GPU, STARTUP.${SCHEMA}`},
+  space:{i:'🔭 Missions spatiales, exoplanètes, trous noirs — vulgarisé pour en parler facilement.',b:'Charger les actualités spatiales',
+    tc:{NASA:'#9b6fc9',ESA:'#9b6fc9',COSMOS:'#9b6fc9',EXOP:'#9b6fc9',CNES:'#9b6fc9'},
+    p:`Tu es journaliste scientifique espace. Date : ${TODAY}. Génère 5 actualités spatiales/astronomiques récentes sur sources françaises (Sciences et Avenir, Futura Sciences, CNRS, CNES). Vulgarise clairement. Tags : NASA, ESA, COSMOS, EXOP, CNES.${SCHEMA}`},
+  science:{i:'🧬 Physique, biologie, neurosciences — découvertes expliquées simplement.',b:'Charger les actualités scientifiques',
+    tc:{PHYSIQUE:'#3ecf8e',BIO:'#3ecf8e',NEURO:'#3ecf8e','DÉCOUV':'#3ecf8e',MED:'#3ecf8e'},
+    p:`Tu es journaliste de vulgarisation scientifique. Date : ${TODAY}. Génère 5 découvertes scientifiques récentes sur sources françaises (Sciences et Avenir, Pour la Science, Futura Sciences, CNRS). Vulgarise simplement. Tags : PHYSIQUE, BIO, NEURO, DÉCOUV, MED.${SCHEMA}`},
+  ocean:{i:'🌊 Espèces rares, fonds marins, biodiversité fascinante.',b:'Charger les actus Océans & Nature',
+    tc:{'OCÉAN':'#4c8fc9',FAUNE:'#52c8f0','ÉCOLOGIE':'#52c8f0',FOND:'#4c8fc9',NATURE:'#52c8f0'},
+    p:`Tu es journaliste nature. Date : ${TODAY}. Génère 5 actualités récentes océans/nature sur sources françaises (GEO, National Geographic FR, Sciences et Avenir). Rédige de façon captivante. Tags : OCÉAN, FAUNE, ÉCOLOGIE, FOND, NATURE.${SCHEMA}`},
+  sport:{i:'🏆 Football, NBA, tennis — résultats et transferts.',b:'Charger les actualités sportives',
+    tc:{FOOT:'#f052a0',NBA:'#f052a0',TENNIS:'#f052a0',SPORT:'#f052a0',F1:'#f052a0'},
+    p:`Tu es journaliste sportif. Date : ${TODAY}. Génère 5 actualités sportives récentes sur sources françaises (L'Équipe, RMC Sport, Eurosport). Foot, NBA, tennis, transferts, records. Tags : FOOT, NBA, TENNIS, SPORT, F1.${SCHEMA}`},
+  manga:{i:'🎌 Sorties, annonces, adaptations — tout le monde manga.',b:'Charger les actus Manga & Anime',
+    tc:{MANGA:'#f08552',ANIME:'#f08552',JUMP:'#f08552',ACTU:'#f08552'},
+    p:`Tu es expert manga. Date : ${TODAY}. Génère 5 actualités manga/anime récentes sur sources francophones (Manga-News, AnimeLand, Nautiljon, Crunchyroll FR). Mentionne les grandes séries. Tags : MANGA, ANIME, JUMP, ACTU.${SCHEMA}`},
+  cbrown:{i:'🎤 Musique, albums, collabs, performances artistiques de Chris Brown.',b:'Charger les actus Chris Brown',
+    tc:{MUSIC:'#52c8f0',COLLAB:'#52c8f0',PERF:'#52c8f0',AWARD:'#52c8f0'},
+    p:`Tu es expert musique R&B. Date : ${TODAY}. Génère 5 actualités récentes sur Chris Brown, UNIQUEMENT artistiques (sorties, albums, collabs, performances, streams, récompenses). Textes en français. Tags : MUSIC, COLLAB, PERF, AWARD.${SCHEMA}`}
+};
+
+const loaded={};
+
+function initPage(id){
+  const c=CFG[id];
+  document.getElementById('page-'+id).innerHTML=`
+    <div style="height:6px"></div>
+    <div class="ins" style="margin-bottom:10px"><p>${c.i}</p></div>
+    <button class="gbtn" id="gb-${id}" onclick="loadNews('${id}')">
+      <span id="gbi-${id}">✦</span>
+      <span id="gbl-${id}">${c.b}</span>
+    </button>
+    <div id="nb-${id}">${skel(3)}</div>`;
+}
+
+function skel(n){
+  return Array(n).fill(0).map(()=>`<div class="skc"><div class="sk" style="width:30%;margin-bottom:7px"></div><div class="sk" style="width:78%"></div><div class="sk" style="width:90%"></div><div class="sk" style="width:52%;margin-top:7px"></div></div>`).join('');
+}
+
+// ── APPEL API (direct, clé locale) ─────────────────────────────
+async function callAI(body){
+  const key=getKey();
+  if(!key) throw new Error('Clé API manquante — va dans ⚙️ Réglages');
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-allow-browser':'true'
+    },
+    body:JSON.stringify(body)
+  });
+  if(!res.ok){
+    const e=await res.json().catch(()=>({}));
+    throw new Error(e.error?.message||`Erreur ${res.status}`);
+  }
+  return res.json();
+}
+
+// ── LOAD NEWS ──────────────────────────────────────────────────
+async function loadNews(id){
+  if(loaded[id]) return;
+  const c=CFG[id];
+  const btn=document.getElementById('gb-'+id);
+  const ico=document.getElementById('gbi-'+id);
+  const lbl=document.getElementById('gbl-'+id);
+  const box=document.getElementById('nb-'+id);
+  btn.disabled=true;
+  ico.innerHTML='<span class="sp"></span>';
+  lbl.textContent='Recherche en cours…';
+  box.innerHTML=skel(5);
+  try{
+    const data=await callAI({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:2500,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      messages:[{role:'user',content:c.p}]
+    });
+    let raw='';
+    if(Array.isArray(data.content)){for(const b of data.content){if(b.type==='text')raw+=b.text;}}
+    const s=raw.indexOf('{'),e=raw.lastIndexOf('}');
+    if(s===-1||e<=s) throw new Error('Format JSON invalide');
+    const parsed=JSON.parse(raw.slice(s,e+1));
+    const items=Array.isArray(parsed.items)?parsed.items:[];
+    if(!items.length) throw new Error('Aucun article reçu');
+    const ts=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    box.innerHTML=items.map(it=>{
+      const col=c.tc[it.tag]||'#4c8fc9';
+      const hasUrl=it.url&&it.url.startsWith('http');
+      return `<a class="nc" ${hasUrl?`href="${it.url}" target="_blank" rel="noopener"`:'href="#" onclick="return false"'}>
+        <div class="nc-top">
+          <span class="tag" style="background:${col}22;color:${col};border:1px solid ${col}33">${it.tag||'—'}</span>
+          <span class="nc-src">${it.source||'IA'}</span>
+          ${hasUrl?'<span class="nc-read">Lire ↗</span>':''}
+        </div>
+        <div class="nc-title">${it.title||''}</div>
+        <div class="nc-sum">${it.summary||''}</div>
+        ${it.impact?`<div class="nc-imp"><b>→</b> ${it.impact}</div>`:''}
+      </a>`;
+    }).join('')+`<div class="ts">Généré le ${TODAY} à ${ts} · Sources francophones · Appuie pour lire l'article</div>`;
+    loaded[id]=true;
+    btn.style.display='none';
+  }catch(err){
+    box.innerHTML=`<div class="errbox"><p>${err.message}<br><br>Réessaie ou vérifie ta clé dans ⚙️ Réglages.</p></div>`;
+    btn.disabled=false;
+    ico.textContent='↺';
+    lbl.textContent='Réessayer';
+  }
+}
+
+// ── CHAT ───────────────────────────────────────────────────────
+const hist=[];
+document.getElementById('ci').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+
+async function sendChat(){
+  const inp=document.getElementById('ci');
+  const btn=document.getElementById('cs');
+  const msg=inp.value.trim();
+  if(!msg||btn.disabled) return;
+  inp.value='';btn.disabled=true;
+  addMsg(msg,'mu');
+  const t=addMsg('Recherche…','mai');
+  t.style.color='var(--muted2)';t.style.fontStyle='italic';
+  hist.push({role:'user',content:msg});
+  try{
+    const data=await callAI({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:900,
+      system:`Tu es analyste expert. Réponds TOUJOURS en français. Portefeuille : Nvidia 100€/mois CTO, MSCI World Swap PEA 30€/mois, MSCI EM ESG 60€/mois PEA, Engie 50€/mois PEA, Air Liquide hold, Hermès hold, Bitcoin hold. 240€/mois total. 25 ans, horizon 35 ans. Concis, précis, vulgarisé si besoin.`,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      messages:hist
+    });
+    let txt='';
+    if(Array.isArray(data.content)){for(const b of data.content){if(b.type==='text')txt+=b.text;}}
+    hist.push({role:'assistant',content:txt||'Pas de réponse.'});
+    t.textContent=txt||'Pas de réponse.';
+    t.style.color='';t.style.fontStyle='';
+  }catch(e){
+    t.textContent='Erreur : '+e.message;
+    t.style.color='var(--red)';t.style.fontStyle='';
+  }
+  btn.disabled=false;
+}
+
+function addMsg(txt,cls){
+  const c=document.getElementById('cm');
+  const el=document.createElement('div');
+  el.className='msg '+cls;el.textContent=txt;
+  c.appendChild(el);c.scrollTop=c.scrollHeight;
+  return el;
+}
+</script>
+</body>
+</html>
