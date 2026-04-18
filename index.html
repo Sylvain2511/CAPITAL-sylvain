@@ -24,6 +24,21 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+/* MODAL */
+#mo{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
+#mo.hidden{display:none}
+#md{background:var(--s1);border:1px solid var(--bdr2);border-radius:16px;padding:24px;width:100%;max-width:380px}
+.ml{font-family:var(--serif);font-size:1.3rem;font-weight:900;color:var(--gold);margin-bottom:4px}
+.ms{font-size:.73rem;color:var(--muted2);margin-bottom:18px;font-weight:300}
+.mlab{font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
+.min{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;padding:11px 13px;color:var(--txt);font-family:var(--mono);font-size:.7rem;outline:none;margin-bottom:6px;transition:border-color .2s}
+.min:focus{border-color:var(--gold)}
+.mh{font-size:.67rem;color:var(--muted);margin-bottom:18px;line-height:1.55;font-weight:300}
+.mh a{color:var(--gold);text-decoration:none}
+.mb{width:100%;padding:12px;background:var(--gold);border:none;border-radius:8px;color:#000;font-family:var(--mono);font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.me{font-size:.68rem;color:var(--red);margin-bottom:10px;display:none}
+
 #hdr{background:rgba(8,9,12,.97);border-bottom:1px solid var(--bdr);padding:calc(11px + var(--sat)) 16px 11px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;backdrop-filter:blur(16px);z-index:100}
 .logo{font-family:var(--serif);font-size:1.15rem;font-weight:900;letter-spacing:.14em;color:var(--gold)}
 .hdr-r{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.56rem;color:var(--muted2)}
@@ -43,7 +58,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
 .stitle:first-child{margin-top:2px}
 .tag{display:inline-block;padding:2px 6px;border-radius:3px;font-family:var(--mono);font-size:.47rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
 .gbtn{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s2);border:1px solid var(--bdr2);border-radius:9px;color:var(--txt);font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;cursor:pointer;transition:all .15s;text-transform:uppercase;margin-bottom:11px;width:100%}
-.gbtn:active{border-color:var(--gold);color:var(--gold)}
+.gbtn:active{border-color:var(--gold)}
 .gbtn:disabled{opacity:.45;cursor:not-allowed}
 .sp{width:10px;height:10px;border:2px solid var(--bdr);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -87,9 +102,29 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
 .errbox{background:var(--s1);border:1px solid rgba(240,82,82,.3);border-radius:11px;padding:12px 14px;margin-bottom:9px}
 .errbox p{color:var(--red);font-size:.72rem;line-height:1.55}
 .ts{font-family:var(--mono);font-size:.47rem;color:var(--muted);text-align:right;padding:2px 0 5px}
+.apirow{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:9px;padding:9px 12px;margin-bottom:10px}
+.apirow span{font-family:var(--mono);font-size:.55rem;color:var(--muted2);flex:1}
+.apibtn{padding:5px 10px;background:var(--s1);border:1px solid var(--bdr2);border-radius:6px;color:var(--txt);font-family:var(--mono);font-size:.52rem;cursor:pointer}
 </style>
 </head>
 <body>
+
+<!-- MODAL CLÉ API -->
+<div id="mo">
+  <div id="md">
+    <div class="ml">CAPITAL</div>
+    <div class="ms">Configuration initiale — 2 minutes</div>
+    <div class="mlab">Ta clé API Anthropic</div>
+    <input class="min" id="ki" type="password" placeholder="sk-ant-api03-...">
+    <div class="mh">
+      Crée ta clé sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+      → "API Keys" → "Create Key" → copie-colle ici.<br>
+      Ta clé est stockée uniquement sur cet appareil.
+    </div>
+    <div class="me" id="me">Clé invalide — elle doit commencer par sk-</div>
+    <button class="mb" onclick="saveKey()">Démarrer →</button>
+  </div>
+</div>
 
 <div id="hdr">
   <div class="logo">CAPITAL</div>
@@ -101,7 +136,6 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
 </div>
 
 <div id="main">
-
   <!-- PORTEFEUILLE -->
   <div class="page active" id="page-portfolio">
     <div class="sbar">
@@ -115,7 +149,6 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
         <div style="font-family:var(--mono);font-size:.48rem;color:var(--muted2)">Retraite capitalisation</div>
       </div>
     </div>
-
     <div class="stitle">Compte-Titres Ordinaire · 100 €/mois</div>
     <div class="pc" style="border-top-color:#c9a84c">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -124,7 +157,6 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
       </div>
       <div class="pfoot"><div class="pdca">DCA 100 €/mois · CTO</div><div class="pst" style="color:var(--green)">★★★</div></div>
     </div>
-
     <div class="stitle">Plan d'Épargne en Actions · 140 €/mois</div>
     <div class="pc" style="border-top-color:#3ecf8e">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -147,7 +179,6 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
       </div>
       <div class="pfoot"><div class="pdca">DCA 50 €/mois · PEA</div><div class="pst" style="color:var(--gold)">★★☆</div></div>
     </div>
-
     <div class="stitle">Positions tenues (Hold)</div>
     <div class="pc" style="border-top-color:#52c8f0">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -170,7 +201,6 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
       </div>
       <div class="pfoot"><div class="pdca">Hold · Haute volatilité</div><div class="pst" style="color:var(--gold)">★★☆</div></div>
     </div>
-
     <div class="stitle">Allocation estimée</div>
     <div class="card">
       <div class="dw">
@@ -215,7 +245,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
     <div id="cw">
       <div id="ch"><span class="ldot"></span> Analyste IA · Tous sujets · Temps réel</div>
       <div id="cm">
-        <div class="msg mai">Bonjour 👋 Pose-moi n'importe quelle question — finance, géopolitique, espace, sciences, manga ou Chris Brown. Je recherche en temps réel.</div>
+        <div class="msg mai">Bonjour 👋 Pose-moi n'importe quelle question — finance, géopolitique, espace, sciences, manga ou Chris Brown.</div>
       </div>
       <div id="cr">
         <input id="ci" type="text" placeholder="Ex: C'est quoi un trou noir ?" autocomplete="off">
@@ -224,6 +254,28 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
     </div>
   </div>
 
+  <!-- RÉGLAGES -->
+  <div class="page" id="page-settings">
+    <div style="height:8px"></div>
+    <div class="stitle">Clé API</div>
+    <div class="apirow">
+      <span id="kstat">Clé configurée ✓</span>
+      <button class="apibtn" onclick="changeKey()">Modifier</button>
+    </div>
+    <div class="ins">
+      <span style="font-size:.85rem;flex-shrink:0">🔒</span>
+      <p>Ta clé est stockée <strong>uniquement sur cet appareil</strong>. Elle transite directement vers l'API Anthropic via un proxy CORS sécurisé.</p>
+    </div>
+    <div class="stitle">Obtenir une clé API</div>
+    <div class="card" style="font-size:.73rem;line-height:1.7;font-weight:300">
+      1. Va sur <strong style="color:var(--gold)">console.anthropic.com</strong><br>
+      2. Crée un compte gratuit<br>
+      3. Menu gauche → <strong style="color:var(--txt)">API Keys</strong> → <strong style="color:var(--txt)">Create Key</strong><br>
+      4. Copie la clé <span style="font-family:var(--mono);font-size:.63rem;color:var(--cyan)">sk-ant-...</span><br>
+      5. Reviens ici et clique "Modifier"<br><br>
+      <span style="color:var(--muted2)">💰 5$ de crédit offert = plusieurs semaines d'utilisation.</span>
+    </div>
+  </div>
 </div>
 
 <!-- NAV -->
@@ -239,22 +291,41 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;
   <button class="nb" onclick="goTo('manga',this)">🎌 Manga</button>
   <button class="nb" onclick="goTo('cbrown',this)">🎤 C. Brown</button>
   <button class="nb" onclick="goTo('chat',this)">💬 Analyste</button>
+  <button class="nb" onclick="goTo('settings',this)">⚙️ Réglages</button>
 </div>
 
 <script>
-// URL du proxy Cloudflare Worker
-const PROXY = 'https://capital-proxy.sylvain-billerey-25.workers.dev';
-const API_KEY = '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';
+// ── CLÉ API ─────────────────────────────────────────────
+const KS='capital_key';
+function getKey(){return localStorage.getItem(KS)||'';}
+function saveKey(){
+  const v=document.getElementById('ki').value.trim();
+  const e=document.getElementById('me');
+  if(!v.startsWith('sk-')){e.style.display='block';return;}
+  e.style.display='none';
+  localStorage.setItem(KS,v);
+  document.getElementById('mo').classList.add('hidden');
+  initApp();
+}
+function changeKey(){
+  document.getElementById('ki').value=getKey();
+  document.getElementById('mo').classList.remove('hidden');
+}
+window.addEventListener('load',()=>{
+  if(getKey()){document.getElementById('mo').classList.add('hidden');initApp();}
+  document.getElementById('ki').addEventListener('keydown',e=>{if(e.key==='Enter')saveKey();});
+});
+function initApp(){tick();}
 
-// CLOCK
-(function tick(){
+// ── CLOCK ────────────────────────────────────────────────
+function tick(){
   const n=new Date();
   document.getElementById('clk').textContent=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   document.getElementById('dt').textContent=n.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
   setTimeout(tick,1000);
-})();
+}
 
-// NAV
+// ── NAV ──────────────────────────────────────────────────
 function goTo(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -266,17 +337,30 @@ function goTo(id,el){
   if(news.includes(id)&&!pg.dataset.init){pg.dataset.init='1';initPage(id);}
 }
 
-// APPEL API via Cloudflare Worker proxy
+// ── API CALL via corsproxy.io ─────────────────────────────
 async function callAI(body){
+  const key=getKey();
+  if(!key) throw new Error('Clé API manquante — va dans ⚙️ Réglages');
+  // corsproxy.io est un proxy CORS gratuit et fiable
+  const PROXY='https://corsproxy.io/?url=https://api.anthropic.com/v1/messages';
   const res=await fetch(PROXY,{
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01'
+    },
     body:JSON.stringify(body)
   });
-  if(!res.ok) throw new Error(`Erreur ${res.status}`);
+  if(!res.ok){
+    let msg=`Erreur ${res.status}`;
+    try{const d=await res.json();msg=d.error?.message||msg;}catch(e){}
+    throw new Error(msg);
+  }
   return res.json();
 }
 
+// ── SECTIONS ─────────────────────────────────────────────
 const TODAY=new Date().toLocaleDateString('fr-FR');
 const SCHEMA=`\n\nRéponds UNIQUEMENT avec un JSON valide sans backticks ni texte autour :
 {"items":[{"tag":"TAG","title":"Titre en français","source":"Nom du média","url":"https://url.fr","summary":"Résumé en 2-3 phrases claires en français.","impact":"Une phrase sur l'impact ou l'intérêt."}]}
@@ -285,25 +369,25 @@ Exactement 5 items. Tous les textes en français.`;
 const CFG={
   geo:{i:'🌍 Conflits, diplomatie, tensions — et leur impact sur tes investissements.',b:'Charger les actualités géopolitiques',
     tc:{GEO:'#4c8fc9',RISQUE:'#f05252',DIPLO:'#4c8fc9',CRISE:'#f08552'},
-    p:`Tu es journaliste géopolitique. Date : ${TODAY}. Génère 5 actualités géopolitiques récentes sur sources francophones (Le Monde, Le Figaro, France24, RFI). Conflits, diplomatie, élections, sanctions. Tags : GEO, RISQUE, DIPLO, CRISE.${SCHEMA}`},
+    p:`Tu es journaliste géopolitique. Date : ${TODAY}. Génère 5 actualités géopolitiques récentes sur sources francophones (Le Monde, France24, RFI). Tags : GEO, RISQUE, DIPLO, CRISE.${SCHEMA}`},
   finance:{i:'📈 Marchés, crypto, taux BCE/Fed — en lien avec ton portefeuille.',b:'Charger les actualités financières',
     tc:{'MARCHÉ':'#3ecf8e',CRYPTO:'#f08552',MACRO:'#3ecf8e',TAUX:'#52c8f0',BOURSE:'#3ecf8e'},
     p:`Tu es analyste financier. Date : ${TODAY}. Portefeuille : Nvidia, MSCI World Swap PEA, MSCI EM ESG PEA, Engie PEA, Air Liquide, Hermès, Bitcoin. Sources françaises (Les Échos, BFM Business). Tags : MARCHÉ, CRYPTO, MACRO, TAUX, BOURSE.${SCHEMA}`},
   tech:{i:'🤖 GPU, IA, Nvidia, startups — les actus tech.',b:'Charger les actualités Tech & IA',
     tc:{IA:'#c9a84c',TECH:'#c9a84c',GPU:'#c9a84c',STARTUP:'#c9a84c'},
-    p:`Tu es journaliste tech. Date : ${TODAY}. Sources françaises (01net, Numerama, Frandroid). GPU Nvidia, LLMs, OpenAI, Google. Tags : IA, TECH, GPU, STARTUP.${SCHEMA}`},
+    p:`Tu es journaliste tech. Date : ${TODAY}. Sources françaises (01net, Numerama, Frandroid). Tags : IA, TECH, GPU, STARTUP.${SCHEMA}`},
   space:{i:'🔭 Missions spatiales, exoplanètes, trous noirs — vulgarisé.',b:'Charger les actualités spatiales',
     tc:{NASA:'#9b6fc9',ESA:'#9b6fc9',COSMOS:'#9b6fc9',EXOP:'#9b6fc9',CNES:'#9b6fc9'},
-    p:`Tu es journaliste scientifique espace. Date : ${TODAY}. Sources françaises (Sciences et Avenir, Futura Sciences, CNRS). Vulgarise clairement. Tags : NASA, ESA, COSMOS, EXOP, CNES.${SCHEMA}`},
+    p:`Tu es journaliste espace. Date : ${TODAY}. Sources françaises (Sciences et Avenir, Futura Sciences, CNRS). Vulgarise. Tags : NASA, ESA, COSMOS, EXOP, CNES.${SCHEMA}`},
   science:{i:'🧬 Physique, biologie, neurosciences — découvertes expliquées simplement.',b:'Charger les actualités scientifiques',
     tc:{PHYSIQUE:'#3ecf8e',BIO:'#3ecf8e',NEURO:'#3ecf8e','DÉCOUV':'#3ecf8e',MED:'#3ecf8e'},
-    p:`Tu es journaliste de vulgarisation scientifique. Date : ${TODAY}. Sources françaises (Sciences et Avenir, Pour la Science, CNRS). Vulgarise simplement. Tags : PHYSIQUE, BIO, NEURO, DÉCOUV, MED.${SCHEMA}`},
+    p:`Tu es journaliste science. Date : ${TODAY}. Sources françaises (Sciences et Avenir, Pour la Science, CNRS). Tags : PHYSIQUE, BIO, NEURO, DÉCOUV, MED.${SCHEMA}`},
   ocean:{i:'🌊 Espèces rares, fonds marins, biodiversité fascinante.',b:'Charger les actus Océans & Nature',
     tc:{'OCÉAN':'#4c8fc9',FAUNE:'#52c8f0','ÉCOLOGIE':'#52c8f0',FOND:'#4c8fc9',NATURE:'#52c8f0'},
-    p:`Tu es journaliste nature. Date : ${TODAY}. Sources françaises (GEO, National Geographic FR, Sciences et Avenir). Tags : OCÉAN, FAUNE, ÉCOLOGIE, FOND, NATURE.${SCHEMA}`},
+    p:`Tu es journaliste nature. Date : ${TODAY}. Sources françaises (GEO, National Geographic FR). Tags : OCÉAN, FAUNE, ÉCOLOGIE, FOND, NATURE.${SCHEMA}`},
   sport:{i:'🏆 Football, NBA, tennis — résultats et transferts.',b:'Charger les actualités sportives',
     tc:{FOOT:'#f052a0',NBA:'#f052a0',TENNIS:'#f052a0',SPORT:'#f052a0',F1:'#f052a0'},
-    p:`Tu es journaliste sportif. Date : ${TODAY}. Sources françaises (L'Équipe, RMC Sport). Foot, NBA, tennis, transferts. Tags : FOOT, NBA, TENNIS, SPORT, F1.${SCHEMA}`},
+    p:`Tu es journaliste sportif. Date : ${TODAY}. Sources françaises (L'Équipe, RMC Sport). Tags : FOOT, NBA, TENNIS, SPORT, F1.${SCHEMA}`},
   manga:{i:'🎌 Sorties, annonces, adaptations — tout le monde manga.',b:'Charger les actus Manga & Anime',
     tc:{MANGA:'#f08552',ANIME:'#f08552',JUMP:'#f08552',ACTU:'#f08552'},
     p:`Tu es expert manga. Date : ${TODAY}. Sources francophones (Manga-News, AnimeLand, Crunchyroll FR). Tags : MANGA, ANIME, JUMP, ACTU.${SCHEMA}`},
@@ -313,22 +397,17 @@ const CFG={
 };
 
 const loaded={};
-
 function initPage(id){
   const c=CFG[id];
   document.getElementById('page-'+id).innerHTML=`
     <div style="height:6px"></div>
     <div class="ins" style="margin-bottom:10px"><p>${c.i}</p></div>
     <button class="gbtn" id="gb-${id}" onclick="loadNews('${id}')">
-      <span id="gbi-${id}">✦</span>
-      <span id="gbl-${id}">${c.b}</span>
+      <span id="gbi-${id}">✦</span><span id="gbl-${id}">${c.b}</span>
     </button>
     <div id="nb-${id}">${skel(3)}</div>`;
 }
-
-function skel(n){
-  return Array(n).fill(0).map(()=>`<div class="skc"><div class="sk" style="width:30%;margin-bottom:7px"></div><div class="sk" style="width:78%"></div><div class="sk" style="width:90%"></div><div class="sk" style="width:52%;margin-top:7px"></div></div>`).join('');
-}
+function skel(n){return Array(n).fill(0).map(()=>`<div class="skc"><div class="sk" style="width:30%;margin-bottom:7px"></div><div class="sk" style="width:78%"></div><div class="sk" style="width:90%"></div><div class="sk" style="width:52%;margin-top:7px"></div></div>`).join('');}
 
 async function loadNews(id){
   if(loaded[id]) return;
@@ -373,14 +452,12 @@ async function loadNews(id){
     loaded[id]=true;
     btn.style.display='none';
   }catch(err){
-    box.innerHTML=`<div class="errbox"><p>${err.message}<br><br>Réessaie dans quelques secondes.</p></div>`;
-    btn.disabled=false;
-    ico.textContent='↺';
-    lbl.textContent='Réessayer';
+    box.innerHTML=`<div class="errbox"><p>${err.message}<br><br>Réessaie ou vérifie ta clé dans ⚙️ Réglages.</p></div>`;
+    btn.disabled=false;ico.textContent='↺';lbl.textContent='Réessayer';
   }
 }
 
-// CHAT
+// ── CHAT ─────────────────────────────────────────────────
 const hist=[];
 document.getElementById('ci').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
 async function sendChat(){
@@ -397,7 +474,7 @@ async function sendChat(){
     const data=await callAI({
       model:'claude-sonnet-4-20250514',
       max_tokens:900,
-      system:`Tu es analyste expert. Réponds TOUJOURS en français. Portefeuille : Nvidia 100€/mois CTO, MSCI World Swap PEA 30€/mois, MSCI EM ESG 60€/mois PEA, Engie 50€/mois PEA, Air Liquide hold, Hermès hold, Bitcoin hold. 240€/mois total. 25 ans, horizon 35 ans.`,
+      system:`Tu es analyste expert. Réponds TOUJOURS en français. Portefeuille : Nvidia 100€/mois CTO, MSCI World Swap PEA 30€/mois, MSCI EM ESG 60€/mois PEA, Engie 50€/mois PEA, Air Liquide hold, Hermès hold, Bitcoin hold. 25 ans, horizon 35 ans.`,
       tools:[{type:'web_search_20250305',name:'web_search'}],
       messages:hist
     });
